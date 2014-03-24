@@ -215,55 +215,51 @@ void selector() {
 
      else if (peakCount == 2) {
 
-tempHDiff = peakHeight[0] - peakHeight[1];
+         tempHDiff = peakHeight[0] - peakHeight[1];
 
-if (tempHDiff < 0) tempHDiff = -tempHDiff; 
+        if (tempHDiff < 0) 
+            tempHDiff = -tempHDiff; 
 
-if (tempHDiff < peakHeight[0] / 10 && peakWidth[0] < 200 && peakWidth[1] < 185)
+        if (tempHDiff < peakHeight[0] / 10 && peakWidth[0] < 200 && peakWidth[1] < 185)
 
-fprintf(stdout, "D\n");
+            fprintf(stdout, "D\n");
 
-else if (peakWidth[0 + antiTap] > 220 && peakWidth[1 + antiTap] < 300 && 
+        else if (peakWidth[0 + antiTap] > 220 && peakWidth[1 + antiTap] < 300 && valleyWidth[0 + antiTap] > 250 && peakSlope[1 + antiTap] < 300)
 
-valleyWidth[0 + antiTap] > 250 && peakSlope[1 + antiTap] < 300)
+            fprintf(stdout, "2\n");
 
-fprintf(stdout, "2\n");
+        else if (peakWidth[0 + antiTap] > 220 && peakWidth[1 + antiTap] > 240 && 
 
-else if (peakWidth[0 + antiTap] > 220 && peakWidth[1 + antiTap] > 240 && 
+            valleyWidth[0 + antiTap] > 250)
 
-valleyWidth[0 + antiTap] > 250)
+            fprintf(stdout, "3\n");
 
-fprintf(stdout, "3\n");
+    } 
 
-} 
+    else if (peakCount == 3) {
 
-else if (peakCount == 3) {
+        tempHDiff = peakHeight[0 + antiTap] - peakHeight[1 + antiTap];
 
-tempHDiff = peakHeight[0 + antiTap] - peakHeight[1 + antiTap];
+        if (tempHDiff < 0) 
+            tempHDiff = -tempHDiff; 
 
-if (tempHDiff < 0) tempHDiff = -tempHDiff; 
+        if (tempHDiff < peakHeight[0] / 10 && peakWidth[0] < 200 && peakWidth[1] < 185 && peakWidth[2] < 185)
 
-if (tempHDiff < peakHeight[0] / 10 && peakWidth[0] < 200 && peakWidth[1] < 185 
+            fprintf(stdout, "X\n");
 
-&& peakWidth[2] < 185)
+        else if (tempHDiff > (2 * peakHeight[0 + antiTap] / 5) && peakWidth[0 + antiTap] > 220 && peakWidth[2 + antiTap] > 240) {
 
-fprintf(stdout, "X\n");
+            tempHDiff = peakHeight[2 + antiTap] - peakHeight[1 + antiTap];
 
-else if (tempHDiff > (2 * peakHeight[0 + antiTap] / 5) && peakWidth[0 + antiTap] > 
+        if (tempHDiff < 0) tempHDiff = -tempHDiff; 
 
-220 && peakWidth[2 + antiTap] > 240) {
+        if (tempHDiff > (2 * peakHeight[2 + antiTap] / 5))
 
-tempHDiff = peakHeight[2 + antiTap] - peakHeight[1 + antiTap];
+            fprintf(stdout, "3\n");
 
-if (tempHDiff < 0) tempHDiff = -tempHDiff; 
+        }
 
-if (tempHDiff > (2 * peakHeight[2 + antiTap] / 5))
-
-fprintf(stdout, "3\n");
-
-}
-
-}
+    }
 
 } 
 
@@ -273,133 +269,134 @@ void reset() {
 
 // gesture input. 
 
-for (int i = 0; i < PAST_LEN; i++) {
+    for (int i = 0; i < PAST_LEN; i++) {
 
-peakHeight[i] = 0;
+        peakHeight[i] = 0;
 
-peakWidth[i] = 0;
+        peakWidth[i] = 0;
 
-peakSlope[i] = 0;
+        peakSlope[i] = 0;
 
-valleyWidth[i] = 0;
+        valleyWidth[i] = 0;
+
+    } 
+
+    circleMode = 0;
+
+    peakCount = 0;
+
+    isUpper = 0; 
 
 } 
 
-circleMode = 0;
-
-peakCount = 0;
-
-isUpper = 0; 
-
-} 
 
 int main() {
 
 // Resets variables for the initial gesture.
 
-int rPeakCount = 0;
+    int rPeakCount = 0;
+    
+    for (int i = 0; i < AVG_LEN; i++) mic[i] = 0;
 
-for (int i = 0; i < AVG_LEN; i++) mic[i] = 0;
+        time1 = 0;
 
-time1 = 0;
-
-reset(); 
+        reset(); 
 
 // Starts Timer0 and Timer0 interrupts for task scheduling.
 
-TCCR0A = (1 << WGM01);
+        TCCR0A = (1 << WGM01);
 
-TCCR0B = 3;
+        TCCR0B = 3;
 
-OCR0A = 60;
+        OCR0A = 60;
 
-TIMSK0 = (1 << OCIE0A); 
+        TIMSK0 = (1 << OCIE0A); 
 
-// Readies the ADC.
+        // Readies the ADC.
 
-ADMUX = (1 << REFS1) | (1 << REFS0) | (1<<ADLAR);
+        ADMUX = (1 << REFS1) | (1 << REFS0) | (1<<ADLAR);
 
-ADCSRA = ((1 << ADEN) | (1 << ADSC)) + 7; 
+        ADCSRA = ((1 << ADEN) | (1 << ADSC)) + 7; 
 
-// Readies the UART.
+        // Readies the UART.
 
-uart_init();
+        uart_init();
 
-stdout = stdin = stderr = &uart_str;
+        stdout = stdin = stderr = &uart_str;
 
-fprintf(stdout, "UART Initialized\n"); 
+        fprintf(stdout, "UART Initialized\n"); 
 
-sei(); 
+        sei(); 
 
-while (1) {
+    while (1) {
+    
+    // Time1 executes approximately every 0.5 ms. Time1 captures the ADC
 
-// Time1 executes approximately every 0.5 ms. Time1 captures the ADC
+    // signal and extracts characteristics from the signal.
 
-// signal and extracts characteristics from the signal.
+        if (time1 == 0) {
 
-if (time1 == 0) {
+            capture();
 
-capture();
+             extract(); 
 
-extract(); 
+            if (tPeakWidth < 10000) tPeakWidth++;
 
-if (tPeakWidth < 10000) tPeakWidth++;
+            if (tSignalWidth < 10000) tSignalWidth++;
 
-if (tSignalWidth < 10000) tSignalWidth++;
+            if (tValleyWidth < 10000) tValleyWidth++;
+    
+            if (tPeakSlope < 10000) tPeakSlope++;
 
-if (tValleyWidth < 10000) tValleyWidth++;
+            index++;
 
-if (tPeakSlope < 10000) tPeakSlope++;
+            index = index % (AVG_LEN + 1);
 
-index++;
+            time1 = t1;
 
-index = index % (AVG_LEN + 1);
+         } 
 
-time1 = t1;
+    // Time4 executes approximately 2.88 s after a circle or tap is
 
-} 
+    // detected. Time4 is a timeout counter for tap circle. Time4 is only
 
-// Time4 executes approximately 2.88 s after a circle or tap is
+    // reset when a circle gesture is detected or when there is a
 
-// detected. Time4 is a timeout counter for tap circle. Time4 is only
+    // singular tap.
 
-// reset when a circle gesture is detected or when there is a
+        if (time4 == 0 && tapCircle == 1)
 
-// singular tap.
+            tapCircle = 0; 
 
-if (time4 == 0 && tapCircle == 1)
+    // Time3 executes approximately every 180 ms. Time3 looks for circle
 
-tapCircle = 0; 
+    // gestures. Circle gestures are detected in real time rather than after
 
-// Time3 executes approximately every 180 ms. Time3 looks for circle
+    // the gesture is finished.
 
-// gestures. Circle gestures are detected in real time rather than after
+        if (time3 == 0 && peakCount > 3) {
 
-// the gesture is finished.
+            if (peakWidth[(peakCount - 1) % PAST_LEN] > 240) {
 
-if (time3 == 0 && peakCount > 3) {
+                circleMode = 1;
 
-if (peakWidth[(peakCount - 1) % PAST_LEN] > 240) {
+                time4 = t4; 
 
-circleMode = 1;
+                if (rPeakCount < peakCount) {
 
-time4 = t4; 
+                    if (tapCircle) fprintf(stdout, "C");
 
-if (rPeakCount < peakCount) {
+                    else fprintf(stdout, "W");
 
-if (tapCircle) fprintf(stdout, "C");
+                }
 
-else fprintf(stdout, "W");
+            } 
 
-}
+            rPeakCount = peakCount;
 
-} 
+            time3 = t3;
 
-rPeakCount = peakCount;
-
-time3 = t3;
-
-} 
+        } 
 
 // Time2 executes approximately 360 ms after a gesture is done. Time2
 
@@ -411,14 +408,14 @@ time3 = t3;
 
 // the threshold.
 
-if (time2 == 0 && peakCount > 0 && peakWidth[0] > 0) {
+        if (time2 == 0 && peakCount > 0 && peakWidth[0] > 0) {
 
-selector();
+            selector();
 
-reset();
+            reset();
+        
+        }
 
-}
-
-}
+    }
 
 }
